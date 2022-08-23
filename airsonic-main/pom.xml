@@ -3,7 +3,7 @@
 
     <modelVersion>4.0.0</modelVersion>
     <artifactId>airsonic-main</artifactId>
-    <packaging>war</packaging>
+    <packaging>jar</packaging>
     <name>Airsonic Main</name>
 
     <parent>
@@ -597,7 +597,7 @@
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
                     <mainClass>org.airsonic.player.Application</mainClass>
-                    <layout>WAR</layout>
+                    <layout>JAR</layout>
                 </configuration>
             </plugin>
             <plugin>
@@ -704,6 +704,31 @@
                             directory such that it will be on the classpath for use during runtime -->
                             <mergeFragment>false</mergeFragment>
                             <webXmlFragment>${project.build.outputDirectory}/precompiled-jsp-web.xml</webXmlFragment>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>3.2.0</version>
+                <executions>
+                    <execution>
+                        <id>copy-resources</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${basedir}/target/classes/static/</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>src/main/webapp</directory>
+                                    <excludes>
+                                        <exclude>WEB-INF/**</exclude>
+                                        <exclude>**/*.jsp</exclude>
+                                    </excludes>
+                                </resource>
+                            </resources>
                         </configuration>
                     </execution>
                 </executions>

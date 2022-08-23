@@ -16,6 +16,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.validation.Validator;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 import org.springframework.web.servlet.ViewResolver;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.handler.SimpleUrlHandlerMapping;
 import org.springframework.web.servlet.view.InternalResourceViewResolver;
@@ -28,6 +29,12 @@ import java.util.Properties;
 
 @Configuration
 public class ServletConfiguration implements WebMvcConfigurer {
+    @Override
+    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        for (String pattern: new String[] { "/icons/", "/script/", "/sonos/", "/style/", "/*.xml", "/*.ico", "/*.html" }) {
+            registry.addResourceHandler(pattern).addResourceLocations("/static/");
+        }
+    }
 
     @Bean
     public ServletRegistrationBean<Servlet> cxfServletBean() {
