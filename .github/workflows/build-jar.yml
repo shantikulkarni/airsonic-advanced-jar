@@ -1,0 +1,52 @@
+name: Java CI with Maven
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+env:
+  DEFAULT_MUSIC_FOLDER: /tmp/music
+  EXCLUDED_TEST_GROUPS:
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up JDK 11
+      uses: actions/setup-java@v3
+      with:
+        java-version: '11'
+        distribution: 'temurin'
+        cache: maven
+    - name: Build with Maven
+      run: mvn -DexcludedGroups=${EXCLUDED_TEST_GROUPS} verify -B -P integration-test -Denforcer.fail=false
+    - name: Calculate tags
+      if: success()
+      id: tagcalc
+      run: |
+        # Create tag
+        ver=$(grep "version=" airsonic-main/target/generated/build-metadata/build.properties | cut -d"=" -f2);
+        ts=$(grep "timestamp=" airsonic-main/target/generated/build-metadata/build.properties | cut -d"=" -f2);
+        # Note this doesn't completely follow semver because docker tags do not take a + sign
+        tag=$ver\.$ts;
+        echo $tag;
+        echo "::set-output name=tag::$tag"
+    - name: Deploy to GitHub Release
+      id: create_release
+      uses: softprops/action-gh-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ steps.tagcalc.outputs.tag }}
+        name: Edge Release ${{ steps.tagcalc.outputs.tag }}
+        draft: false
+        prerelease: true
+        generate_release_notes: true
+        files: |
+          airsonic-main/target/airsonic.jar
+          airsonic-main/target/artifacts-checksums.sha
